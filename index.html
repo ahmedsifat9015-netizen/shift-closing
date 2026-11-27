@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Shift Closing</title>
+<style>
+:root{--bg:#f3f5f4;--card:#fff;--ink:#14231f;--mute:#5d6e68;--line:#d5ddda;--acc:#0b6b57;--acc2:#e8f3ef;--bad:#b3261e;--warn:#fff3d6;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#101816;--card:#17231f;--ink:#e6efec;--mute:#9bb0a9;--line:#2a3b36;--acc:#4fd1b0;--acc2:#1b302a;--bad:#ff8a80;--warn:#3a3118}}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font-family:"Hind Siliguri","Noto Sans Bengali","Kalpurush",system-ui,sans-serif;line-height:1.5;padding:16px}
+main{max-width:560px;margin:0 auto}
+h1{font-size:22px;margin:4px 0 2px}
+p.sub{margin:0 0 14px;color:var(--mute);font-size:14px}
+section{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px;margin-bottom:12px}
+h2{font-size:16px;margin:0 0 10px}
+label{display:block;font-size:14px;margin:8px 0 3px}
+input[type=text]{width:100%;font:inherit;font-size:18px;padding:10px 12px;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--ink)}
+input[type=text]:focus{outline:2px solid var(--acc);border-color:var(--acc)}
+.chk{display:flex;gap:8px;align-items:center;font-size:14px;margin:0 0 4px}
+.chk input{width:18px;height:18px;accent-color:var(--acc)}
+.hours{display:flex;gap:10px;align-items:center}
+.hours input{width:90px}
+table{width:100%;border-collapse:collapse;font-size:15px}
+td{padding:9px 4px;border-bottom:1px solid var(--line);vertical-align:top}
+tr:last-child td{border-bottom:0}
+td.v{text-align:right;font-weight:700;white-space:nowrap}
+td small{display:block;color:var(--mute);font-weight:400;font-size:12px}
+.yield{background:var(--acc2);border-radius:8px;padding:14px;margin-bottom:10px}
+.yield b{display:block;font-size:34px;color:var(--acc);line-height:1.1}
+.yield span{font-size:14px;color:var(--mute)}
+.msg{background:var(--warn);border-radius:8px;padding:10px 12px;font-size:14px;margin-bottom:10px}
+.msg.err{color:var(--bad)}
+button{font:inherit;padding:9px 14px;border-radius:8px;border:1px solid var(--line);background:var(--card);color:var(--ink);cursor:pointer}
+</style>
+</head>
+<body>
+<main>
+<h1>Shift Closing</h1>
+<p class="sub">বোতল লাইনের তিনটা কাউন্টার দিন, হিসেব নিজে নিজে বের হবে।</p>
+
+<section>
+<h2>আগের শিফটের শেষ কাউন্টার</h2>
+<label class="chk"><input type="checkbox" id="zero"> কাউন্টার ০ থেকে শুরু (আগের রিডিং লাগবে না)</label>
+<div id="prevBox">
+<label for="p1">C1 – প্রিফর্ম (এন্টার)</label><input type="text" id="p1" inputmode="numeric" autocomplete="off">
+<label for="p2">C2 – ব্লো বোতল</label><input type="text" id="p2" inputmode="numeric" autocomplete="off">
+<label for="p3">C3 – ফিলার বোতল</label><input type="text" id="p3" inputmode="numeric" autocomplete="off">
+</div>
+</section>
+
+<section>
+<h2>আমাদের শিফটের শেষ কাউন্টার</h2>
+<label for="c1">C1 – প্রিফর্ম (এন্টার)</label><input type="text" id="c1" inputmode="numeric" autocomplete="off">
+<label for="c2">C2 – ব্লো বোতল</label><input type="text" id="c2" inputmode="numeric" autocomplete="off">
+<label for="c3">C3 – ফিলার বোতল</label><input type="text" id="c3" inputmode="numeric" autocomplete="off">
+<label for="hr">শিফটের ঘণ্টা</label>
+<div class="hours"><input type="text" id="hr" inputmode="decimal" value="8" autocomplete="off"><span>ঘণ্টা</span></div>
+</section>
+
+<section id="out" hidden>
+<h2>ফলাফল</h2>
+<div id="msg"></div>
+<div class="yield"><b id="yield">–</b><span>Yield (ফিলারে ভালো বোতল ÷ মোট প্রিফর্ম)</span></div>
+<table>
+<tr><td>ফিলারে দেওয়া ভালো বোতল</td><td class="v" id="good">–</td></tr>
+<tr><td>মোট প্রিফর্ম ব্যবহার</td><td class="v" id="tot">–</td></tr>
+<tr><td>প্রিফর্ম রিজেক্ট<small>C1 − C2</small></td><td class="v" id="pw">–</td></tr>
+<tr><td>বোতল রিজেক্ট<small>C2 − C3</small></td><td class="v" id="bw">–</td></tr>
+<tr><td>মোট ওয়াস্টেজ</td><td class="v" id="tw">–</td></tr>
+<tr><td>ঘণ্টায় গড় ভালো বোতল</td><td class="v" id="ph">–</td></tr>
+</table>
+</section>
+
+<button id="clear" type="button">সব মুছে নতুন হিসেব</button>
+</main>
+<script>
+(function(){
+var bn="০১২৩৪৫৬৭৮৯";
+function norm(s){return String(s).replace(/[০-৯]/g,function(d){return bn.indexOf(d)}).replace(/[^0-9.]/g,"")}
+function num(id){var v=norm(document.getElementById(id).value);return v===""?null:parseFloat(v)}
+function fmt(n,dec){
+ var s=Number(n).toLocaleString("en-IN",{minimumFractionDigits:dec||0,maximumFractionDigits:dec||0});
+ return s.replace(/[0-9]/g,function(d){return bn[d]});
+}
+function $(id){return document.getElementById(id)}
+function calc(){
+ var zero=$("zero").checked;
+ $("prevBox").style.display=zero?"none":"block";
+ var p=zero?[0,0,0]:[num("p1"),num("p2"),num("p3")];
+ var c=[num("c1"),num("c2"),num("c3")];
+ var hrs=num("hr")||8;
+ var out=$("out"),msg=$("msg");
+ var missing=c.concat(p).some(function(x){return x===null});
+ if(missing){out.hidden=true;return}
+ out.hidden=false;
+ var d=[c[0]-p[0],c[1]-p[1],c[2]-p[2]];
+ var errs=[];
+ if(d.some(function(x){return x<0}))errs.push("এখনকার রিডিং আগের রিডিংয়ের চেয়ে ছোট হয়েছে। সংখ্যাগুলো আবার দেখুন।");
+ else if(d[0]<d[1]||d[1]<d[2])errs.push("C1 ≥ C2 ≥ C3 হওয়ার কথা। কোনো রিডিং ভুল হতে পারে।");
+ if(d[0]===0)errs.push("এই শিফটে প্রিফর্ম ০, তাই yield বের হবে না।");
+ msg.innerHTML=errs.map(function(e){return '<div class="msg err">'+e+'</div>'}).join("");
+ if(d.some(function(x){return x<0})||d[0]===0){["yield","good","tot","pw","bw","tw","ph"].forEach(function(i){$(i).textContent="–"});return}
+ var pw=d[0]-d[1],bw=d[1]-d[2],tw=d[0]-d[2];
+ $("yield").textContent=fmt(d[2]/d[0]*100,2)+"%";
+ $("good").textContent=fmt(d[2])+" পিস";
+ $("tot").textContent=fmt(d[0])+" পিস";
+ $("pw").textContent=fmt(pw)+" পিস ("+fmt(pw/d[0]*100,2)+"%)";
+ $("bw").textContent=fmt(bw)+" পিস ("+(d[1]?fmt(bw/d[1]*100,2):"০")+"%)";
+ $("tw").textContent=fmt(tw)+" পিস ("+fmt(tw/d[0]*100,2)+"%)";
+ $("ph").textContent=fmt(Math.round(d[2]/hrs))+" পিস";
+}
+["p1","p2","p3","c1","c2","c3","hr","zero"].forEach(function(i){
+ $(i).addEventListener("input",calc);$(i).addEventListener("change",calc);
+});
+$("clear").addEventListener("click",function(){
+ ["p1","p2","p3","c1","c2","c3"].forEach(function(i){$(i).value=""});
+ $("zero").checked=false;$("hr").value="8";calc();
+});
+calc();
+})();
+</script>
+</body>
+</html>
